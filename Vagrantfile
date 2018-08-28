@@ -29,6 +29,11 @@ Vagrant.configure("2") do |config|
   # AD-HOC CONFIG
   # shared folders to transfer files between host OS and guest OS
   config.vm.synced_folder "~/mms/scripts", "/home/vagrant/scripts"
+  config.vm.synced_folder "./config", "/home/vagrant/config"
+
+  config.vm.provision "shell", privileged: false, inline: <<-SHELL
+     mkdir -p /home/vagrant/mms/data
+  SHELL
 
   config.vm.provision "shell", privileged: true, inline: <<-SHELL
      # https://docs.mongodb.com/manual/tutorial/install-mongodb-enterprise-on-ubuntu/
@@ -43,12 +48,8 @@ Vagrant.configure("2") do |config|
 
      # point localhost to your host OS
      sed -i 's/127.0.0.1/10.0.2.2/' /etc/hosts
-  SHELL
 
-  config.vm.provision "shell", privileged: false, inline: <<-SHELL
-     mkdir -p /home/vagrant/mms/data
-
-     # start up isdb (TODO: use mongodb-start-standalone.bash need to override --bind_ip)
-     mongod --bind_ip=0.0.0.0 --dbpath=/home/vagrant/mms/data --logpath=/home/vagrant/mms/data/log --fork
+     cp /home/vagrant/config/mongod.conf /etc/mongod.conf
+     service start mongod
   SHELL
 end
