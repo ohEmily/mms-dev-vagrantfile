@@ -30,8 +30,8 @@ Vagrant.configure("2") do |config|
   # shared folders to transfer files between host OS and guest OS
   config.vm.synced_folder "~/mms/scripts", "/home/vagrant/scripts"
 
-  # https://docs.mongodb.com/manual/tutorial/install-mongodb-enterprise-on-ubuntu/
   config.vm.provision "shell", privileged: true, inline: <<-SHELL
+     # https://docs.mongodb.com/manual/tutorial/install-mongodb-enterprise-on-ubuntu/
      apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
      echo "deb [ arch=amd64,arm64,ppc64el,s390x ] http://repo.mongodb.com/apt/ubuntu xenial/mongodb-enterprise/4.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-enterprise.list
      apt-get update
@@ -40,12 +40,15 @@ Vagrant.configure("2") do |config|
      mkdir -p /data/db
      sudo chown mongodb:mongodb /data
      sudo chown mongodb:mongodb /data/db
+
+     # point localhost to your host OS
+     sed -i 's/127.0.0.1/10.0.2.2/' /etc/hosts
   SHELL
 
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
      mkdir -p /home/vagrant/mms/data
 
-     # start up isdb
+     # start up isdb (TODO: use mongodb-start-standalone.bash need to override --bind_ip)
      mongod --bind_ip=0.0.0.0 --dbpath=/home/vagrant/mms/data --logpath=/home/vagrant/mms/data/log --fork
   SHELL
 end
