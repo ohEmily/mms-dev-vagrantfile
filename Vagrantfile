@@ -48,6 +48,10 @@ Vagrant.configure("2") do |config|
     # point localhost to your host OS so agents can find the application server
     sed -i 's/127.0.0.1/10.0.2.2/' /etc/hosts
 
+    # set up /data for the automation agent
+    mkdir -p /data
+    chown mongodb:mongodb /data
+
     cp /home/vagrant/config/mongod.conf /etc/mongod.conf
     service mongod start
   SHELL
