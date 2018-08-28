@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
   # (warning: sometimes you'll hit a port collision here. if netstat
   # doesn't identify a process running on this port, retry)
   for i in 64000..65535
-      config.vm.network :forwarded_port, guest: i, host: i
+    config.vm.network :forwarded_port, guest: i, host: i
   end
 
   # AD-HOC CONFIG
@@ -32,24 +32,23 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder "./config", "/home/vagrant/config"
 
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
-     mkdir -p /home/vagrant/mms/data
+    mkdir -p /home/vagrant/data/db
   SHELL
 
   config.vm.provision "shell", privileged: true, inline: <<-SHELL
-     # https://docs.mongodb.com/manual/tutorial/install-mongodb-enterprise-on-ubuntu/
-     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
-     echo "deb [ arch=amd64,arm64,ppc64el,s390x ] http://repo.mongodb.com/apt/ubuntu xenial/mongodb-enterprise/4.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-enterprise.list
-     apt-get update
-     apt-get install -y mongodb-enterprise
- 
-     mkdir -p /data/db
-     sudo chown mongodb:mongodb /data
-     sudo chown mongodb:mongodb /data/db
+    # https://docs.mongodb.com/manual/tutorial/install-mongodb-enterprise-on-ubuntu/
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
+    echo "deb [ arch=amd64,arm64,ppc64el,s390x ] http://repo.mongodb.com/apt/ubuntu xenial/mongodb-enterprise/4.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-enterprise.list
+    apt-get update
+    apt-get install -y mongodb-enterprise
 
-     # point localhost to your host OS
-     sed -i 's/127.0.0.1/10.0.2.2/' /etc/hosts
+    chmod 777 /home/vagrant/data
+    chmod 777 /home/vagrant/data/db
 
-     cp /home/vagrant/config/mongod.conf /etc/mongod.conf
-     service start mongod
+    # point localhost to your host OS so agents can find the application server
+    sed -i 's/127.0.0.1/10.0.2.2/' /etc/hosts
+
+    cp /home/vagrant/config/mongod.conf /etc/mongod.conf
+    service mongod start
   SHELL
 end
