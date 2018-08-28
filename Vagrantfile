@@ -28,21 +28,24 @@ Vagrant.configure("2") do |config|
 
   # AD-HOC CONFIG
   # shared folders to transfer files between host OS and guest OS
-  config.vm.synced_folder "./shared", "/shared_from_host"
-  config.vm.synced_folder "~/mms/scripts", "/usr/local/scripts"
+  config.vm.synced_folder "~/mms/scripts", "/home/vagrant/scripts"
 
   # https://docs.mongodb.com/manual/tutorial/install-mongodb-enterprise-on-ubuntu/
-  config.vm.provision "shell", inline: <<-SHELL
-     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
+  config.vm.provision "shell", privileged: true, inline: <<-SHELL
+     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
      echo "deb [ arch=amd64,arm64,ppc64el,s390x ] http://repo.mongodb.com/apt/ubuntu xenial/mongodb-enterprise/4.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-enterprise.list
      apt-get update
      apt-get install -y mongodb-enterprise
  
      mkdir -p /data/db
-     mkdir -p /data/db/backups
+     sudo chown mongodb:mongodb /data
+     sudo chown mongodb:mongodb /data/db
+  SHELL
+
+  config.vm.provision "shell", privileged: false, inline: <<-SHELL
      mkdir -p /home/vagrant/mms/data
 
      # start up isdb
      mongod --bind_ip=0.0.0.0 --dbpath=/home/vagrant/mms/data --logpath=/home/vagrant/mms/data/log --fork
-   SHELL
+  SHELL
 end
