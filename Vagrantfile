@@ -54,5 +54,6 @@ Vagrant.configure("2") do |config|
 
     cp /home/vagrant/config/mongod.conf /etc/mongod.conf
     service mongod start
+    systemctl enable mongod
   SHELL
 end
